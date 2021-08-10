@@ -30,7 +30,7 @@ val screens = listOf(
 2. Invoke BottomNavScaffold:
 
 ```
-BottomNavScaffold(rememberNavController(), screens, "films")
+BottomNavScaffold(rememberNavController(), screens)
 ```
 
 if the start destination is the first screen of the list, or
