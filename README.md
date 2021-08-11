@@ -4,7 +4,9 @@ Android library for defining bottom navigation in jetpack compose reducing boile
 
 # Installation
 
-**In process of being published on maven central**
+Add in your build.gradle the
+dependency `dev.davidvarela.bottomnavscaffold:bottomnavscafold:[compose_version]`,
+where `compose_version` is the version of Compose your app depends on
 
 # Usage
 

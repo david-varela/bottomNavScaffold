@@ -2,6 +2,12 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'maven-publish'
+    id 'signing'
+    id 'org.jetbrains.dokka'
+}
+
+ext {
+    versionName = "1.0.1-alpha4-SNAPSHOT"
 }
 
 android {
@@ -11,7 +17,7 @@ android {
         minSdk 21
         targetSdk 31
         versionCode 1
-        versionName "1.0.1-alpha1"
+        versionName versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -51,14 +57,103 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidx_junit_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
 }
+/*
+ * Helpful resources for publishing in maven central:
+ *
+ * https://getstream.io/blog/publishing-libraries-to-mavencentral-2021/
+ * https://central.sonatype.org/publish/ and related pages
+ * https://developer.android.com/studio/build/maven-publish-plugin
+ * https://docs.gradle.org/current/userguide/publishing_setup.html and related pages
+ */
 
-publishing {
-    publications {
-        myPublication(MavenPublication) {
-            groupId 'dev.davidvarela.bottomnavscaffold'
-            version '1.0.1-alpha1'
-            artifactId 'bottomNavScaffold'
-            artifact("$buildDir/outputs/aar/bottomnavscaffold-release.aar")
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    if (project.plugins.findPlugin("com.android.library")) {
+        // For Android libraries
+        from android.sourceSets.main.java.srcDirs
+        from android.sourceSets.main.kotlin.srcDirs
+    } else {
+        // For pure Kotlin libraries, in case you have them
+        from sourceSets.main.java.srcDirs
+        from sourceSets.main.kotlin.srcDirs
+    }
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: dokkaJavadoc) {
+    archiveClassifier.set('javadoc')
+    from dokkaJavadoc.outputDirectory
+}
+
+artifacts {
+    archives androidSourcesJar
+    archives androidJavadocsJar
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                groupId 'dev.davidvarela.bottomnavscaffold'
+                artifactId 'bottomNavScaffold'
+                version versionName
+
+                artifact androidSourcesJar
+                artifact androidJavadocsJar
+
+                pom {
+                    name = 'BottomNavScaffold'
+                    description = 'Android library for defining bottom navigation in jetpack compose reducing boilerplate'
+                    url = 'https://github.com/david-varela/bottomNavScaffold'
+
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'david-varela'
+                            name = 'David González Varela'
+                            email = 'coding@davidvarela.dev'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:github.com/david-varela/bottomNavScaffold.git'
+                        developerConnection = 'scm:git:ssh://github.com/david-varela/bottomNavScaffold.git'
+                        url = 'https://github.com/david-varela/bottomNavScaffold/tree/main'
+                    }
+                }
+            }
         }
+
+        repositories {
+            // can't use mavenCentral() because it points to a different url, apparently
+//            mavenCentral()
+            maven {
+                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = versionName.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username ossrhUsername
+                    password ossrhPassword
+                }
+            }
+        }
+    }
+
+    /*
+     * Signing parameters saved in ~/.gradle/gradle.properties. Parameters:
+     *
+     * signing.keyId
+     * signing.password
+     * signing.secretKeyRingFile
+     */
+    signing {
+        sign publishing.publications.release
     }
 }
