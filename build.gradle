@@ -8,6 +8,7 @@ buildscript {
         junit_version = '4.13.2'
         kotlin_version = '1.5.21'
         navigation_compose_version = '2.4.0-alpha06'
+        test_manifest_version = '1.0.1'
     }
     repositories {
         google()

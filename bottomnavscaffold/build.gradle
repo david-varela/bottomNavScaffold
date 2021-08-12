@@ -42,6 +42,11 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion compose_version
     }
+
+    packagingOptions {
+        exclude 'META-INF/AL2.0'
+        exclude 'META-INF/LGPL2.1'
+    }
 }
 
 dependencies {
@@ -56,7 +61,10 @@ dependencies {
     // Android Test
     androidTestImplementation "androidx.test.ext:junit:$androidx_junit_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    androidTestImplementation "androidx.compose.ui:ui-test-manifest:$test_manifest_version" // https://stackoverflow.com/a/67291344/3091357
 }
+
 /*
  * Helpful resources for publishing in maven central:
  *
