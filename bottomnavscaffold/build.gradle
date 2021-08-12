@@ -7,7 +7,7 @@ plugins {
 }
 
 ext {
-    versionName = "1.0.1-alpha4-SNAPSHOT"
+    versionName = "1.0.1"
 }
 
 android {
